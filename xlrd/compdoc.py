@@ -79,9 +79,10 @@ class CompDoc(object):
     """
 
 
-    def __init__(self, mem, logfile=sys.stdout, DEBUG=0):
+    def __init__(self, mem, logfile=sys.stdout, DEBUG=0, disable_compound_check=False):
         self.logfile = logfile
         self.DEBUG = DEBUG
+        self.disable_compound_check = disable_compound_check
         if mem[0:8] != SIGNATURE:
             raise CompDocError('Not an OLE2 compound document')
         if mem[28:30] != b'\xFE\xFF':
@@ -289,7 +290,8 @@ class CompDoc(object):
             while s >= 0:
                 if seen_id is not None:
                     if self.seen[s]:
-                        raise CompDocError("%s corruption: seen[%d] == %d" % (name, s, self.seen[s]))
+                        if not self.disable_compound_check:
+                            raise CompDocError("%s corruption: seen[%d] == %d" % (name, s, self.seen[s]))
                     self.seen[s] = seen_id
                 start_pos = base + s * sec_size
                 sectors.append(mem[start_pos:start_pos+sec_size])
@@ -306,7 +308,8 @@ class CompDoc(object):
             while s >= 0:
                 if seen_id is not None:
                     if self.seen[s]:
-                        raise CompDocError("%s corruption: seen[%d] == %d" % (name, s, self.seen[s]))
+                        if not self.disable_compound_check:
+                            raise CompDocError("%s corruption: seen[%d] == %d" % (name, s, self.seen[s]))
                     self.seen[s] = seen_id
                 start_pos = base + s * sec_size
                 grab = sec_size
@@ -423,7 +426,8 @@ class CompDoc(object):
         while s >= 0:
             if self.seen[s]:
                 print("_locate_stream(%s): seen" % qname, file=self.logfile); dump_list(self.seen, 20, self.logfile)
-                raise CompDocError("%s corruption: seen[%d] == %d" % (qname, s, self.seen[s]))
+                if not self.disable_compound_check:
+                    raise CompDocError("%s corruption: seen[%d] == %d" % (qname, s, self.seen[s]))
             self.seen[s] = seen_id
             tot_found += 1
             if tot_found > found_limit:

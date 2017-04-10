@@ -70,6 +70,7 @@ def open_workbook_xls(filename=None,
     file_contents=None,
     encoding_override=None,
     formatting_info=False, on_demand=False, ragged_rows=False,
+    disable_compound_check=False
     ):
     t0 = time.clock()
     if TOGGLE_GC:
@@ -85,6 +86,7 @@ def open_workbook_xls(filename=None,
             formatting_info=formatting_info,
             on_demand=on_demand,
             ragged_rows=ragged_rows,
+            disable_compound_check=disable_compound_check
             )
         t1 = time.clock()
         bk.load_time_stage_1 = t1 - t0
@@ -594,6 +596,7 @@ class Book(BaseObject):
         formatting_info=False,
         on_demand=False,
         ragged_rows=False,
+        disable_compound_check=False
         ):
         # DEBUG = 0
         self.logfile = logfile
@@ -626,7 +629,7 @@ class Book(BaseObject):
             # got this one at the antique store
             self.mem = self.filestr
         else:
-            cd = compdoc.CompDoc(self.filestr, logfile=self.logfile)
+            cd = compdoc.CompDoc(self.filestr, logfile=self.logfile, disable_compound_check=disable_compound_check)
             if USE_FANCY_CD:
                 for qname in ['Workbook', 'Book']:
                     self.mem, self.base, self.stream_len = \
